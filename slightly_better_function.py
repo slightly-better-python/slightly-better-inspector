@@ -3,6 +3,7 @@ from inspect import signature
 from types import FunctionType
 from typing import Any
 from typing import get_type_hints
+from typing import List
 
 from slightly_better_parameter import SlightlyBetterParameter
 from utils import get_class_that_defined_method
@@ -15,8 +16,17 @@ class SlightlyBetterFunction:
 
     def __init__(self, _function):
         self._function = _function
-        self.positional_types = []
-        self.named_types = {}
+        # self.positional_types = []
+        # self.named_types = {}
+
+        self.parameters = {
+            Parameter.KEYWORD_ONLY: [],
+            Parameter.VAR_KEYWORD: [],
+            Parameter.VAR_POSITIONAL: [],
+            Parameter.POSITIONAL_ONLY: [],
+            Parameter.POSITIONAL_OR_KEYWORD: []
+        }
+
 
         # signature returns whatever is in the function's __annotation__ attribute
         # which could get distorted if `__future__.annotations` is used anywhere
@@ -32,45 +42,79 @@ class SlightlyBetterFunction:
                 kind=parameter.kind,
                 default=parameter.default,
                 annotation=parameter.annotation,
-                type_hint=type_hints.get(parameter.name)
+                type_hint=type_hints.get(parameter.name),
             )
-            for parameter in parameter_list if parameter.name not in ['self', 'cls']
+            for parameter in parameter_list
         ]
+
         for sb_parameter in sb_parameters:
-            self.positional_types.append(sb_parameter)
-            self.named_types[sb_parameter.name] = sb_parameter
+            print(sb_parameter.name)
+            print('first for loop?')
+            # if sb_parameter.kind == Parameter.POSITIONAL_OR_KEYWORD:
+            #     self.positional_or_keyword_types.append(sb_parameter)
+            # elif sb_parameter.kind == Parameter.VAR_POSITIONAL
+            self.parameters[sb_parameter.kind].append(sb_parameter)
+
+            # self.positional_types.append(sb_parameter)
+            # self.named_types[sb_parameter.name] = sb_parameter
             self.kinds.append(sb_parameter.kind)
 
-        self.input_count = len(self.positional_types)
+        self.input_count = len(self.parameters.values())
 
     def accepts(self, *args: Any, **kwargs) -> bool:
-        parameter_types = self.positional_types
-
-        if (
-                Parameter.VAR_KEYWORD not in self.kinds
-                and Parameter.VAR_POSITIONAL not in self.kinds
-                and len(args) + len(kwargs) < self.input_count - 2
-        ):
+        try:
+            print([param.name for param in self.parameters[Parameter.POSITIONAL_OR_KEYWORD]])
+            param_names = [param.name for param in self.parameters[Parameter.POSITIONAL_OR_KEYWORD]]
+            if 'self' in param_names or 'cls' in param_names:
+                args = [None, *args]
+            self._signature.bind(*args, **kwargs)
+        except TypeError:
             return False
 
-        for index, parameter_type in enumerate(parameter_types):
+        positionally_accepting_params: List[SlightlyBetterParameter] = [
+            *self.parameters[Parameter.POSITIONAL_ONLY],
+            *self.parameters[Parameter.POSITIONAL_OR_KEYWORD],
+            *self.parameters[Parameter.VAR_POSITIONAL],
+        ]
+
+        for index, arg in enumerate(args):
             try:
-                current_arg = args[index]
+                current_param = positionally_accepting_params[index]
+                if not current_param.accepts(arg):
+                    return False
             except IndexError:
-                if parameter_type.kind in [Parameter.VAR_KEYWORD, Parameter.VAR_POSITIONAL]:
-                    return True
-                return False
+                if (
+                        positionally_accepting_params[-1].kind == Parameter.VAR_POSITIONAL
+                        and positionally_accepting_params[-1].accepts(arg)
+                ):
+                    continue
+                else:
+                    return False
 
-            if not parameter_type.accepts(current_arg):
-                return False
+        kwarg_accepting_params = {}
+        for param in [
+            *self.parameters[Parameter.POSITIONAL_OR_KEYWORD],
+            *self.parameters[Parameter.KEYWORD_ONLY],
+            *self.parameters[Parameter.VAR_KEYWORD],
+        ]:
+            kwarg_accepting_params[param.name] = param
 
+        for key, value in kwargs.items():
+            if key not in kwarg_accepting_params:
+                if (
+                        self.parameters[Parameter.VAR_KEYWORD]
+                        and not self.parameters[Parameter.VAR_KEYWORD][0].accepts(value)
+                ):
+                    return False
+            elif not kwarg_accepting_params[key].accepts(value):
+                return False
         return True
 
     def get_name(self) -> str:
         return self._function.__qualname__
 
-    def get_types(self) -> dict:
-        return self.named_types
+    # def get_types(self) -> dict:
+    #     return self.named_types
 
     def visibility(self) -> str:
         name = self.get_name()

@@ -2,6 +2,7 @@ from inspect import Parameter
 from typing import Any
 from typing import get_args
 from typing import get_origin
+from typing import Optional
 from typing import Union
 
 
@@ -16,11 +17,13 @@ class SlightlyBetterParameter(Parameter):
 
     def __init__(self, type_hint, *args, **kwargs):
         super(SlightlyBetterParameter, self).__init__(*args, **kwargs)
+        print(self.name)
+        print('INSIDE THE BEAST!!')
         self.type_hint = type_hint
         self.is_noneable = self.default != self.empty
         self.is_annotated = self.annotation != self.empty
         self.is_any = False
-        self._name = ''
+        self.type_name = ''
         self.accepted_types = []
 
         if not self.is_annotated:
@@ -31,7 +34,7 @@ class SlightlyBetterParameter(Parameter):
             if not is_union_type:
                 self.accepted_types = [self.type_hint]
                 self.is_any = self.annotation == Any
-                self._name = self.TYPE_MAPPING.get(self.type_hint, str(self.type_hint))
+                self.type_name = self.TYPE_MAPPING.get(self.type_hint, str(self.type_hint))
             else:
                 self.accepted_types = list(get_args(self.type_hint))
 
@@ -43,12 +46,15 @@ class SlightlyBetterParameter(Parameter):
                         self.TYPE_MAPPING.get(accepted_type, str(accepted_type))
                     )
 
-                self._name = '|'.join(names)
+                self.type_name = '|'.join(names)
 
-    def get_name(self) -> str:
-        return self.name
+    # def get_name(self) -> str:
+    #     return self.name
 
-    def accepts(self, _input: Any) -> bool:
+    def accepts(self, _input: Any, key: Optional[str] = None) -> bool:
+        if key and self.name != key:
+            return False
+
         if self.is_any:
             return True
 
