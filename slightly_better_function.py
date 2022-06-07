@@ -48,8 +48,6 @@ class SlightlyBetterFunction:
         ]
 
         for sb_parameter in sb_parameters:
-            print(sb_parameter.name)
-            print('first for loop?')
             # if sb_parameter.kind == Parameter.POSITIONAL_OR_KEYWORD:
             #     self.positional_or_keyword_types.append(sb_parameter)
             # elif sb_parameter.kind == Parameter.VAR_POSITIONAL
@@ -63,7 +61,6 @@ class SlightlyBetterFunction:
 
     def accepts(self, *args: Any, **kwargs) -> bool:
         try:
-            print([param.name for param in self.parameters[Parameter.POSITIONAL_OR_KEYWORD]])
             param_names = [param.name for param in self.parameters[Parameter.POSITIONAL_OR_KEYWORD]]
             if 'self' in param_names or 'cls' in param_names:
                 args = [None, *args]

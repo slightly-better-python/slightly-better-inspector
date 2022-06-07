@@ -1,3 +1,4 @@
+from inspect import isclass
 from inspect import Parameter
 from typing import Any
 from typing import get_args
@@ -17,8 +18,6 @@ class SlightlyBetterParameter(Parameter):
 
     def __init__(self, type_hint, *args, **kwargs):
         super(SlightlyBetterParameter, self).__init__(*args, **kwargs)
-        print(self.name)
-        print('INSIDE THE BEAST!!')
         self.type_hint = type_hint
         self.is_noneable = self.default != self.empty
         self.is_annotated = self.annotation != self.empty
@@ -48,8 +47,8 @@ class SlightlyBetterParameter(Parameter):
 
                 self.type_name = '|'.join(names)
 
-    # def get_name(self) -> str:
-    #     return self.name
+    def get_name(self) -> str:
+        return self.name
 
     def accepts(self, _input: Any, key: Optional[str] = None) -> bool:
         if key and self.name != key:
@@ -66,10 +65,12 @@ class SlightlyBetterParameter(Parameter):
 
         extends_or_is = False
         for accepted_type in self.accepted_types:
-            try:
-                extends_or_is = accepted_type in _input.mro()
-            except AttributeError:
-                continue
+            if not isclass(_input):
+                input_class = type(_input)
+            else:
+                input_class = _input
+            if issubclass(input_class, accepted_type):
+                extends_or_is = True
 
         if extends_or_is:
             return True
