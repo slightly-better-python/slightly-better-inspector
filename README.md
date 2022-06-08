@@ -1,1 +1,1 @@
-# slightly-better-inspector
+# slightly-better-types
