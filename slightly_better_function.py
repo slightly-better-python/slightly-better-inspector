@@ -1,12 +1,11 @@
 from inspect import Parameter
 from inspect import signature
-from types import FunctionType
 from typing import Any
 from typing import get_type_hints
 from typing import List
 
 from slightly_better_parameter import SlightlyBetterParameter
-from utils import get_class_that_defined_method
+from utils import inspect_type
 
 
 class SlightlyBetterFunction:
@@ -68,9 +67,6 @@ class SlightlyBetterFunction:
         for index, arg in enumerate(args):
             try:
                 current_param = positionally_accepting_params[index]
-                print('RIGHT HERE??')
-                print(current_param)
-                print(arg)
                 if not current_param.accepts(arg):
                     return False
             except IndexError:
@@ -114,8 +110,7 @@ class SlightlyBetterFunction:
             return self.PUBLIC
 
     def is_static(self):
-        _class = get_class_that_defined_method(self._function)
-        return _class is not None and isinstance(self._function, FunctionType)
+        return inspect_type(self._function) == 'staticmethod'
 
     def is_abstract(self):
         return hasattr(self._function, '__isabstractmethod__')
