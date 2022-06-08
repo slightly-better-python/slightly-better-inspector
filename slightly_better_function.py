@@ -68,6 +68,9 @@ class SlightlyBetterFunction:
         for index, arg in enumerate(args):
             try:
                 current_param = positionally_accepting_params[index]
+                print('RIGHT HERE??')
+                print(current_param)
+                print(arg)
                 if not current_param.accepts(arg):
                     return False
             except IndexError:

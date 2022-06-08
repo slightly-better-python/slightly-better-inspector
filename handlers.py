@@ -5,7 +5,7 @@ from inspect import isclass
 from inspect import isfunction
 from typing import Any
 from typing import Callable
-from typing import List
+from typing import Dict
 from typing import Optional
 
 from slightly_better_function import SlightlyBetterFunction
@@ -36,13 +36,13 @@ class Handlers:
         func: Callable[[SlightlyBetterFunction], bool] = lambda method: method.accepts(*args, **kwargs)
         return self.filter(func)
 
-    def all(self) -> List[SlightlyBetterFunction]:
-        all_methods = []
+    def all(self) -> Dict[str, SlightlyBetterFunction]:
+        all_methods = {}
         for func_name, func in self.methods.items():
             if not self._filter_allows(method=func):
                 continue
 
-            all_methods.append(func)
+            all_methods[func_name] = func
         return all_methods
 
     def filter(self, _filter: Callable[..., bool]) -> Handlers:
@@ -52,7 +52,7 @@ class Handlers:
         return clone
 
     def first(self) -> Optional[SlightlyBetterFunction]:
-        return next(iter(self.all()), None)
+        return next(iter(self.all().values()), None)
 
     def public(self) -> Handlers:
         clone = copy(self)
@@ -73,13 +73,8 @@ class Handlers:
         return clone
 
     def _filter_allows(self, method: SlightlyBetterFunction) -> bool:
-        print(method.visibility())
-        print(self.visibility_filters)
         if self.visibility_filters and method.visibility() not in self.visibility_filters:
-            print('returning false')
             return False
-        else:
-            print('is true')
 
         for _filter in self.filters:
             if _filter(method) is False:

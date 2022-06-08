@@ -69,8 +69,11 @@ class SlightlyBetterParameter(Parameter):
                 input_class = type(_input)
             else:
                 input_class = _input
-            if issubclass(input_class, accepted_type):
-                extends_or_is = True
+            try:
+                if issubclass(input_class, accepted_type):
+                    extends_or_is = True
+            except TypeError:
+                continue
 
         if extends_or_is:
             return True
