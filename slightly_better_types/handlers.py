@@ -8,7 +8,7 @@ from typing import Callable
 from typing import Dict
 from typing import Optional
 
-from slightly_better_function import SlightlyBetterFunction
+from slightly_better_types.function import Function
 
 
 class Handlers:
@@ -16,7 +16,7 @@ class Handlers:
     def __init__(self, _class):
         self._class = _class
         self.methods = {
-            func_name: SlightlyBetterFunction(
+            func_name: Function(
                 getattr(self._class, func_name)
             ) for func_name in dir(self._class)
             if isfunction(getattr(self._class, func_name))
@@ -33,10 +33,10 @@ class Handlers:
         return Handlers(_class)
 
     def accepts(self, *args, **kwargs) -> Handlers:
-        func: Callable[[SlightlyBetterFunction], bool] = lambda method: method.accepts(*args, **kwargs)
+        func: Callable[[Function], bool] = lambda method: method.accepts(*args, **kwargs)
         return self.filter(func)
 
-    def all(self) -> Dict[str, SlightlyBetterFunction]:
+    def all(self) -> Dict[str, Function]:
         all_methods = {}
         for func_name, func in self.methods.items():
             if not self._filter_allows(method=func):
@@ -51,28 +51,28 @@ class Handlers:
         clone.filters.append(_filter)
         return clone
 
-    def first(self) -> Optional[SlightlyBetterFunction]:
+    def first(self) -> Optional[Function]:
         return next(iter(self.all().values()), None)
 
     def public(self) -> Handlers:
         clone = copy(self)
         clone.visibility_filters = self.visibility_filters[:]
-        clone.visibility_filters = SlightlyBetterFunction.PUBLIC
+        clone.visibility_filters = Function.PUBLIC
         return clone
 
     def protected(self) -> Handlers:
         clone = copy(self)
         clone.visibility_filters = self.visibility_filters[:]
-        clone.visibility_filters = SlightlyBetterFunction.PROTECTED
+        clone.visibility_filters = Function.PROTECTED
         return clone
 
     def private(self) -> Handlers:
         clone = copy(self)
         clone.visibility_filters = self.visibility_filters[:]
-        clone.visibility_filters = SlightlyBetterFunction.PRIVATE
+        clone.visibility_filters = Function.PRIVATE
         return clone
 
-    def _filter_allows(self, method: SlightlyBetterFunction) -> bool:
+    def _filter_allows(self, method: Function) -> bool:
         if self.visibility_filters and method.visibility() not in self.visibility_filters:
             return False
 

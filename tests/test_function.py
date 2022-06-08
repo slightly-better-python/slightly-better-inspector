@@ -1,11 +1,10 @@
 import unittest
 from abc import ABC
-from inspect import Parameter
+from typing import Optional  # noqa
 from typing import TYPE_CHECKING
-from typing import Union
-from typing import Optional
+from typing import Union  # noqa
 
-from slightly_better_function import SlightlyBetterFunction
+from slightly_better_types.function import Function
 
 if TYPE_CHECKING:
     from typing import Generator
@@ -91,9 +90,9 @@ class TestSlightlyBetterFunction(unittest.TestCase):
             f = self._make_method(definition)
             assert not f.accepts(*args, *kwargs)
 
-    def _make_method(self, definition: str) -> SlightlyBetterFunction:
+    def _make_method(self, definition: str) -> Function:
         exec(f"class TestClass:\n\tdef test(self,{definition}):\n\t\tpass")
-        return SlightlyBetterFunction(eval('TestClass.test'))
+        return Function(eval('TestClass.test'))
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 from inspect import isclass
-from inspect import Parameter
+from inspect import Parameter as InspectParameter
 from typing import Any
 from typing import get_args
 from typing import get_origin
@@ -7,7 +7,7 @@ from typing import Optional
 from typing import Union
 
 
-class SlightlyBetterParameter(Parameter):
+class Parameter(InspectParameter):
     TYPE_MAPPING = {
         int: 'integer',
         bool: 'boolean',
@@ -17,7 +17,7 @@ class SlightlyBetterParameter(Parameter):
     }
 
     def __init__(self, type_hint, *args, **kwargs):
-        super(SlightlyBetterParameter, self).__init__(*args, **kwargs)
+        super(Parameter, self).__init__(*args, **kwargs)
         self.type_hint = type_hint
         self.is_noneable = self.default != self.empty
         self.is_annotated = self.annotation != self.empty

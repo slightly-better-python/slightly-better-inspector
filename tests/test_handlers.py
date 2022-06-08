@@ -1,7 +1,7 @@
 import unittest
 from typing import Dict
 
-from handlers import Handlers
+from slightly_better_types.handlers import Handlers
 
 
 class Bar:

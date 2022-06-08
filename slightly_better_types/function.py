@@ -1,14 +1,14 @@
-from inspect import Parameter
+from inspect import Parameter as InspectParameter
 from inspect import signature
 from typing import Any
 from typing import get_type_hints
 from typing import List
 
-from slightly_better_parameter import SlightlyBetterParameter
-from utils import inspect_type
+from slightly_better_types.parameter import Parameter
+from slightly_better_types.utils import inspect_type
 
 
-class SlightlyBetterFunction:
+class Function:
     PUBLIC = 'public'
     PROTECTED = 'protected'
     PRIVATE = 'private'
@@ -17,11 +17,11 @@ class SlightlyBetterFunction:
         self._function = _function
 
         self.parameters = {
-            Parameter.KEYWORD_ONLY: [],
-            Parameter.VAR_KEYWORD: [],
-            Parameter.VAR_POSITIONAL: [],
-            Parameter.POSITIONAL_ONLY: [],
-            Parameter.POSITIONAL_OR_KEYWORD: []
+            InspectParameter.KEYWORD_ONLY: [],
+            InspectParameter.VAR_KEYWORD: [],
+            InspectParameter.VAR_POSITIONAL: [],
+            InspectParameter.POSITIONAL_ONLY: [],
+            InspectParameter.POSITIONAL_OR_KEYWORD: []
         }
 
         # signature returns whatever is in the function's __annotation__ attribute
@@ -33,7 +33,7 @@ class SlightlyBetterFunction:
         self.kinds = []
 
         sb_parameters = [
-            SlightlyBetterParameter(
+            Parameter(
                 name=parameter.name,
                 kind=parameter.kind,
                 default=parameter.default,
@@ -51,17 +51,17 @@ class SlightlyBetterFunction:
 
     def accepts(self, *args: Any, **kwargs) -> bool:
         try:
-            param_names = [param.name for param in self.parameters[Parameter.POSITIONAL_OR_KEYWORD]]
+            param_names = [param.name for param in self.parameters[InspectParameter.POSITIONAL_OR_KEYWORD]]
             if 'self' in param_names or 'cls' in param_names:
                 args = [None, *args]
             self._signature.bind(*args, **kwargs)
         except TypeError:
             return False
 
-        positionally_accepting_params: List[SlightlyBetterParameter] = [
-            *self.parameters[Parameter.POSITIONAL_ONLY],
-            *self.parameters[Parameter.POSITIONAL_OR_KEYWORD],
-            *self.parameters[Parameter.VAR_POSITIONAL],
+        positionally_accepting_params: List[Parameter] = [
+            *self.parameters[InspectParameter.POSITIONAL_ONLY],
+            *self.parameters[InspectParameter.POSITIONAL_OR_KEYWORD],
+            *self.parameters[InspectParameter.VAR_POSITIONAL],
         ]
 
         for index, arg in enumerate(args):
@@ -71,7 +71,7 @@ class SlightlyBetterFunction:
                     return False
             except IndexError:
                 if (
-                        positionally_accepting_params[-1].kind == Parameter.VAR_POSITIONAL
+                        positionally_accepting_params[-1].kind == InspectParameter.VAR_POSITIONAL
                         and positionally_accepting_params[-1].accepts(arg)
                 ):
                     continue
@@ -80,17 +80,17 @@ class SlightlyBetterFunction:
 
         kwarg_accepting_params = {}
         for param in [
-            *self.parameters[Parameter.POSITIONAL_OR_KEYWORD],
-            *self.parameters[Parameter.KEYWORD_ONLY],
-            *self.parameters[Parameter.VAR_KEYWORD],
+            *self.parameters[InspectParameter.POSITIONAL_OR_KEYWORD],
+            *self.parameters[InspectParameter.KEYWORD_ONLY],
+            *self.parameters[InspectParameter.VAR_KEYWORD],
         ]:
             kwarg_accepting_params[param.name] = param
 
         for key, value in kwargs.items():
             if key not in kwarg_accepting_params:
                 if (
-                        self.parameters[Parameter.VAR_KEYWORD]
-                        and not self.parameters[Parameter.VAR_KEYWORD][0].accepts(value)
+                        self.parameters[InspectParameter.VAR_KEYWORD]
+                        and not self.parameters[InspectParameter.VAR_KEYWORD][0].accepts(value)
                 ):
                     return False
             elif not kwarg_accepting_params[key].accepts(value):
