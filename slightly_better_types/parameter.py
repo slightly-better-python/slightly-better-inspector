@@ -52,6 +52,10 @@ class Parameter(InspectParameter):
         return self.name
 
     def accepts(self, _input: Any, key: Optional[str] = None) -> bool:
+        print(_input)
+        print(type(_input))
+        print(self.accepted_types)
+
         if key and self.name != key:
             return False
 
@@ -69,6 +73,11 @@ class Parameter(InspectParameter):
             for item in _input:
                 results.append(self.accepts(item))
             return all(results) and len(results) > 0
+
+        # if isinstance(_input, dict):
+        #     results = []
+        #     for key, item in _input.items():
+        #         results.append()
 
         extends_or_is = False
         for accepted_type in self.accepted_types:

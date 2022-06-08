@@ -1,14 +1,14 @@
-import unittest
 import inspect
+import unittest
 from abc import ABC
-from typing import Any # noqa
 from types import FunctionType
-from typing import Dict
-from typing import Union # noqa
+from typing import Any  # noqa
+from typing import Dict  # noqa
 from typing import get_type_hints
-from typing import List
+from typing import List  # noqa
 from typing import Optional
 from typing import TYPE_CHECKING
+from typing import Union  # noqa
 
 from slightly_better_types.parameter import Parameter
 
@@ -26,19 +26,18 @@ class Foo(AbstractFoo):
 
 
 class TestSlightlyBetterParameter(unittest.TestCase):
-
     boolean: bool = True
     integer: int = 1
     _float: float = 1.2
     string: str = 'string'
-    _list: List = []
-    _dict: Dict = {}
     _none = None
     foo: Foo
 
     def true_values(self) -> "Generator":
 
         self.foo = Foo()
+
+        yield ['a: dict', {self.string: self.integer}]
 
         yield ['a: Any', self.boolean]
         yield ['a: bool', self.boolean]

@@ -1,5 +1,6 @@
 import unittest
 from abc import ABC
+from typing import Dict  # noqa
 from typing import Optional  # noqa
 from typing import TYPE_CHECKING
 from typing import Union  # noqa
@@ -44,6 +45,8 @@ class TestSlightlyBetterFunction(unittest.TestCase):
 
         yield ['a: Optional[int], b: Optional[int]', [None, None], {}]
         yield ['a: Optional[int], b: Optional[str]', [None, self.string], {}]
+
+        yield ['a: dict', [{self.string: self.integer}], {}]
 
         # Kwarg Test
         yield [
