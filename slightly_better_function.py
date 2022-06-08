@@ -16,8 +16,6 @@ class SlightlyBetterFunction:
 
     def __init__(self, _function):
         self._function = _function
-        # self.positional_types = []
-        # self.named_types = {}
 
         self.parameters = {
             Parameter.KEYWORD_ONLY: [],
@@ -26,7 +24,6 @@ class SlightlyBetterFunction:
             Parameter.POSITIONAL_ONLY: [],
             Parameter.POSITIONAL_OR_KEYWORD: []
         }
-
 
         # signature returns whatever is in the function's __annotation__ attribute
         # which could get distorted if `__future__.annotations` is used anywhere
@@ -48,13 +45,7 @@ class SlightlyBetterFunction:
         ]
 
         for sb_parameter in sb_parameters:
-            # if sb_parameter.kind == Parameter.POSITIONAL_OR_KEYWORD:
-            #     self.positional_or_keyword_types.append(sb_parameter)
-            # elif sb_parameter.kind == Parameter.VAR_POSITIONAL
             self.parameters[sb_parameter.kind].append(sb_parameter)
-
-            # self.positional_types.append(sb_parameter)
-            # self.named_types[sb_parameter.name] = sb_parameter
             self.kinds.append(sb_parameter.kind)
 
         self.input_count = len(self.parameters.values())
@@ -108,10 +99,7 @@ class SlightlyBetterFunction:
         return True
 
     def get_name(self) -> str:
-        return self._function.__qualname__
-
-    # def get_types(self) -> dict:
-    #     return self.named_types
+        return self._function.__name__
 
     def visibility(self) -> str:
         name = self.get_name()
