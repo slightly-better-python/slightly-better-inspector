@@ -19,7 +19,8 @@ class Bar(AbstractBar):
 
 
 class Foo:
-    pass
+    def __init__(self):
+        pass
 
 
 class TestSlightlyBetterFunction(unittest.TestCase):
@@ -54,6 +55,19 @@ class TestSlightlyBetterFunction(unittest.TestCase):
             'a: int, b: Union[int, str], c: int = 2, *args, keyword_only: str, **kwargs: str',
             [],
             {'a': self.integer, 'b': self.string, 'keyword_only': self.string, 'another_kwarg': self.string}
+        ]
+
+        # Arg and Kwarg Test
+        yield [
+            'a: int, b: Union[int, str], c: int = 2, *args, keyword_only: str, **kwargs',
+            [self.integer],
+            {'b': self.string, 'keyword_only': 'word'}
+        ]
+
+        yield [
+            'a: int, b: Union[int, str], c: int = 2, *args, keyword_only: str, **kwargs: str',
+            [self.integer, self.string],
+            {'keyword_only': self.string, 'another_kwarg': self.string}
         ]
 
         # Inheritance

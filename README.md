@@ -7,10 +7,38 @@ Improved abstraction for dealing with union and named types.
 ## Installation
 
 ```bash
-pip install slightly-better-types==0.0.1
+pip install slightly-better-types==1.0.0
 ```
 
 ## Usage
+
+Using the `Parameter` class directly
+
+```python
+from inspect import signature
+from typing import get_type_hints
+from slightly_better_types.parameter import Parameter
+
+
+class Foo:
+    pass
+
+
+def accepts_string(a: Foo):
+    pass
+
+
+signature = signature(accepts_string)
+type_hints = get_type_hints(get_type_hints(accepts_string))
+
+parameter = list((signature.parameters.values()))[0]
+parameter = Parameter(parameter=parameter, type_hint=type_hints.get(parameter.name))
+
+parameter.accepts(1)  # False
+parameter.accepts(Foo())  # True
+
+
+```
 
 Using the `Function` class:
 

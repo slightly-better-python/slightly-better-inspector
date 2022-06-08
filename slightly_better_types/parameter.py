@@ -1,20 +1,13 @@
+from __future__ import annotations
+
 from inspect import isclass
 from inspect import Parameter as InspectParameter
 from typing import Any
 from typing import get_args
-from typing import get_origin
 from typing import Optional
-from typing import Union
 
 
 class Parameter(InspectParameter):
-    TYPE_MAPPING = {
-        int: 'integer',
-        bool: 'boolean',
-        float: 'float',
-        str: 'string',
-        tuple: 'tuple'
-    }
 
     def __init__(self, type_hint, *args, **kwargs):
         super(Parameter, self).__init__(*args, **kwargs)
@@ -22,30 +15,38 @@ class Parameter(InspectParameter):
         self.is_noneable = self.default != self.empty
         self.is_annotated = self.annotation != self.empty
         self.is_any = False
-        self.type_name = ''
         self.accepted_types = []
 
         if not self.is_annotated:
             self.accepted_types.append(Any)
             self.is_any = True
         else:
-            is_union_type = get_origin(self.annotation) == Union
-            if not is_union_type:
-                self.accepted_types = [self.type_hint]
-                self.is_any = self.annotation == Any
-                self.type_name = self.TYPE_MAPPING.get(self.type_hint, str(self.type_hint))
-            else:
-                self.accepted_types = list(get_args(self.type_hint))
+            self.accepted_types = self.__get_accepted_types(self.type_hint)
+            for accepted_type in self.accepted_types:
+                if accepted_type == Any:
+                    self.is_any = True
 
-                names = []
-                for accepted_type in self.accepted_types:
-                    if accepted_type == Any:
-                        self.is_any = True
-                    names.append(
-                        self.TYPE_MAPPING.get(accepted_type, str(accepted_type))
-                    )
+    @staticmethod
+    def new(parameter: InspectParameter, type_hint: str) -> Parameter:
+        return Parameter(
+            name=parameter.name,
+            kind=parameter.kind,
+            default=parameter.default,
+            annotation=parameter.annotation,
+            type_hint=type_hint,
+        )
 
-                self.type_name = '|'.join(names)
+    def __get_accepted_types(self, type_hint):
+        results = []
+        args = list(get_args(type_hint))
+        if not args:
+            return [type_hint]
+
+        for arg in args:
+            for r in self.__get_accepted_types(arg):
+                results.append(r)
+
+        return results
 
     def get_name(self) -> str:
         return self.name
@@ -62,6 +63,12 @@ class Parameter(InspectParameter):
 
         if type(_input) in self.accepted_types:
             return True
+
+        if isinstance(_input, list):
+            results = []
+            for item in _input:
+                results.append(self.accepts(item))
+            return all(results) and len(results) > 0
 
         extends_or_is = False
         for accepted_type in self.accepted_types:

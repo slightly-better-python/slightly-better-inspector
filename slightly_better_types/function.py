@@ -33,14 +33,10 @@ class Function:
         self.kinds = []
 
         sb_parameters = [
-            Parameter(
-                name=parameter.name,
-                kind=parameter.kind,
-                default=parameter.default,
-                annotation=parameter.annotation,
-                type_hint=type_hints.get(parameter.name),
-            )
-            for parameter in parameter_list
+            Parameter.new(
+                parameter=parameter,
+                type_hint=type_hints.get(parameter.name)
+            ) for parameter in parameter_list
         ]
 
         for sb_parameter in sb_parameters:
@@ -52,16 +48,19 @@ class Function:
     def accepts(self, *args: Any, **kwargs) -> bool:
         try:
             param_names = [param.name for param in self.parameters[InspectParameter.POSITIONAL_OR_KEYWORD]]
+            temp_args = args
             if 'self' in param_names or 'cls' in param_names:
-                args = [None, *args]
-            self._signature.bind(*args, **kwargs)
+                temp_args = [None, *args]
+            self._signature.bind(*temp_args, **kwargs)
         except TypeError:
             return False
 
         positionally_accepting_params: List[Parameter] = [
-            *self.parameters[InspectParameter.POSITIONAL_ONLY],
-            *self.parameters[InspectParameter.POSITIONAL_OR_KEYWORD],
-            *self.parameters[InspectParameter.VAR_POSITIONAL],
+            param for param in [
+                *self.parameters[InspectParameter.POSITIONAL_ONLY],
+                *self.parameters[InspectParameter.POSITIONAL_OR_KEYWORD],
+                *self.parameters[InspectParameter.VAR_POSITIONAL],
+            ] if param.name not in ['self', 'cls']
         ]
 
         for index, arg in enumerate(args):
