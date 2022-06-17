@@ -56,5 +56,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],  # Information to filter the project on PyPi website
     python_requires='>=3.9',
-    install_requires=[]
+    install_requires=['izzet>=1.0.2']
 )

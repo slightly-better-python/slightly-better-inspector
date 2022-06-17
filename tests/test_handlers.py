@@ -33,7 +33,8 @@ class TestHandlers(unittest.TestCase):
 
         assert ['accepts_string', 'accepts_string_too'] == list(handlers.accepts('string').all().keys())
         assert ['accepts_string_too'] == list(handlers.accepts(b='string').all().keys())
-        assert ['accepts_int'] == list(handlers.accepts(1).all().keys())
+        print(list(handlers.accepts(1).all().keys()))
+        assert ['accepts_int', 'static'] == list(handlers.accepts(1).all().keys())
 
         class TestClass:
             pass
