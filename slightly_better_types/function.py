@@ -24,6 +24,8 @@ class Function:
             InspectParameter.POSITIONAL_OR_KEYWORD: []
         }
 
+        self.named_types = {}
+
         # signature returns whatever is in the function's __annotation__ attribute
         # which could get distorted if `__future__.annotations` is used anywhere
         self._signature = signature(self._function)
@@ -42,6 +44,7 @@ class Function:
         for sb_parameter in sb_parameters:
             self.parameters[sb_parameter.kind].append(sb_parameter)
             self.kinds.append(sb_parameter.kind)
+            self.named_types[sb_parameter.name] = sb_parameter.accepted_type
 
         self.input_count = len(self.parameters.values())
 
@@ -98,6 +101,9 @@ class Function:
 
     def get_name(self) -> str:
         return self._function.__name__
+
+    def get_types(self) -> dict:
+        return self.named_types
 
     def visibility(self) -> str:
         name = self.get_name()

@@ -7,7 +7,7 @@ Improved abstraction for dealing with union and named types.
 ## Installation
 
 ```bash
-pip install slightly-better-types==1.0.0
+pip install slightly-better-types==1.2.0
 ```
 
 ## Usage
