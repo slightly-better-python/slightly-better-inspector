@@ -57,19 +57,19 @@ class Handlers:
     def public(self) -> Handlers:
         clone = copy(self)
         clone.visibility_filters = self.visibility_filters[:]
-        clone.visibility_filters = Function.PUBLIC
+        clone.visibility_filters.append(Function.PUBLIC)
         return clone
 
     def protected(self) -> Handlers:
         clone = copy(self)
         clone.visibility_filters = self.visibility_filters[:]
-        clone.visibility_filters = Function.PROTECTED
+        clone.visibility_filters.append(Function.PROTECTED)
         return clone
 
     def private(self) -> Handlers:
         clone = copy(self)
         clone.visibility_filters = self.visibility_filters[:]
-        clone.visibility_filters = Function.PRIVATE
+        clone.visibility_filters.append(Function.PRIVATE)
         return clone
 
     def _filter_allows(self, method: Function) -> bool:
